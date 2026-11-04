@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlackPanther Indian Cyber Cell</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600;700&family=Inter:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-base: #050505;
+            --bg-panel: rgba(10, 15, 10, 0.8);
+            --neon-green: #39ff14;
+            --neon-cyan: #00ffcc;
+            --neon-red: #ff003c;
+            --text-main: #e0e0e0;
+            --text-muted: #888888;
+            --font-mono: 'Fira Code', monospace;
+            --font-sans: 'Inter', sans-serif;
+            --panel-border: rgba(0, 255, 204, 0.2);
+            --panel-shadow: 0 0 15px rgba(0, 255, 204, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            background-image: 
+                linear-gradient(var(--panel-border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--panel-border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center;
+        }
+
+        /* Utility Classes */
+        .text-cyan { color: var(--neon-cyan); }
+        .text-green { color: var(--neon-green); }
+        .text-red { color: var(--neon-red); }
+        .bg-cyan { background-color: var(--neon-cyan); color: #000; }
+        .bg-green { background-color: var(--neon-green); color: #000; }
+        
+        h1, h2, h3, h4, h5 { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Disclaimer Modal */
+        #disclaimer-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: var(--bg-panel);
+            border: 1px solid var(--neon-red);
+            padding: 40px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 0, 60, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .modal-content button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            font-family: var(--font-mono);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .modal-content button:hover {
+            background: var(--neon-red);
+            color: #000;
+        }
+
+        /* Layout */
+        #app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--panel-border);
+        }
+        .sidebar-header svg {
+            width: 50px;
+            height: 50px;
+            fill: none;
+            stroke: var(--neon-cyan);
+            stroke-width: 1.5;
+            margin-bottom: 10px;
+        }
+        .sidebar-header h1 { font-size: 14px; color: var(--neon-cyan); }
+        .sidebar-header p { font-size: 10px; color: var(--neon-green); margin-top: 5px; }
+        .sidebar-header .operator { font-size: 9px; color: var(--text-muted); margin-top: 10px; }
+
+        nav {
+            flex: 1;
+            padding: 15px 10px;
+            overflow-y: auto;
+        }
+        nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-family: var(--font-mono);
+            border-radius: 4px;
+            margin-bottom: 5px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        nav a svg { width: 16px; height: 16px; margin-right: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+        nav a:hover, nav a.active {
+            background: rgba(0, 255, 204, 0.1);
+            color: var(--neon-cyan);
+            border-left: 3px solid var(--neon-cyan);
+        }
+
+        .sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-family: var(--font-mono);
+        }
+        .demo-toggle {
+            background: var(--neon-green);
+            color: #000;
+            border: none;
+            padding: 3px 8px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .demo-toggle.off { background: var(--text-muted); }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .view-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        /* Components */
+        .glass-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: var(--panel-shadow);
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,255,204,0.1);
+        }
+        .panel-header svg { width: 18px; height: 18px; margin-right: 10px; stroke: var(--neon-cyan); fill: none; stroke-width: 2;}
+
+        /* Forms */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        input, select {
+            background: #000;
+            border: 1px solid var(--panel-border);
+            color: var(--neon-green);
+            padding: 10px 15px;
+            font-family: var(--font-mono);
+            border-radius: 4px;
+            outline: none;
+            flex: 1;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus { border-color: var(--neon-cyan); }
+        select { flex: 0 0 120px; }
+        
+        .btn-primary {
+            background: rgba(0, 255, 204, 0.1);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 10px 25px;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .btn-primary:hover {
+            background: var(--neon-cyan);
+            color: #000;
+        }
+
+        .btn-action {
+            background: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-muted);
+            padding: 5px 10px;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            border-radius: 3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-action:hover { border-color: var(--neon-green); color: var(--neon-green); }
+        .btn-action svg { width: 12px; height: 12px; stroke: currentColor; fill: none; }
+
+        /* Terminal */
+        .terminal {
+            background: #000;
+            border: 1px solid var(--neon-green);
+            height: 250px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--neon-green);
+            padding: 10px;
+            overflow-y: auto;
+            border-radius: 4px;
+        }
+        .terminal-line { margin-bottom: 4px; }
+        .terminal-time { color: var(--text-muted); margin-right: 8px; }
+
+        /* Grids */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+        .stat-card .val { font-size: 24px; font-weight: bold; margin-top: 10px; font-family: var(--font-mono); }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Results List */
+        .data-list { list-style: none; font-size: 13px; }
+        .data-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .data-list .label { color: var(--text-muted); }
+        .data-list .value { color: var(--text-main); font-family: var(--font-mono); text-align: right;}
+        .badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            border: 1px solid currentColor;
+        }
+        .badge.verified { color: var(--neon-green); }
+        .badge.unverified { color: #ffb700; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--panel-border); }
+        th { color: var(--neon-cyan); font-family: var(--font-mono); font-weight: normal; }
+        td { color: var(--text-main); font-family: var(--font-mono); }
+
+        /* Loader */
+        .loader-container {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid transparent;
+            border-top-color: var(--neon-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px auto;
+        }
+        
+        .results-container { display: none; margin-top: 20px; }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #app-container { flex-direction: column; }
+            aside { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--panel-border); }
+            nav { display: flex; overflow-x: auto; padding: 10px; }
+            nav a { margin-right: 10px; margin-bottom: 0; white-space: nowrap; }
+            .sidebar-footer { display: none; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 255, 204, 0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-cyan); }
+    </style>
+</head>
+<body>
+
+    <!-- Disclaimer Modal -->
+    <div id="disclaimer-modal">
+        <div class="modal-content">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--neon-red)" stroke-width="2" style="width:60px; height:60px; margin:0 auto 15px;">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <h2 class="text-red" style="margin-bottom:10px;">RESTRICTED ACCESS</h2>
+            <h3 class="text-cyan" style="margin-bottom:20px;">BlackPanther Indian Cyber Cell</h3>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; text-align: justify; margin-bottom: 15px;">
+                WARNING: This system is an independent Open Source Intelligence (OSINT) tool. It is <strong>NOT</strong> an official government or police portal. 
+                Use of this platform must comply with ethical guidelines and applicable laws.
+            </p>
+            <ul style="font-size: 12px; color: var(--text-muted); text-align: left; margin-bottom: 20px; padding-left: 20px; line-height: 1.5;">
+                <li>Do not bypass authentication or scrape platforms illegally.</li>
+                <li>No private residential addresses or private messages are accessible.</li>
+                <li>Live tracking of personal location is strictly prohibited and technically impossible via this tool.</li>
+                <li>All lookups rely purely on publicly indexed data and authorized API providers.</li>
+            </ul>
+            <button id="btn-accept">I ACKNOWLEDGE & AGREE</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-container">
+        <!-- Sidebar -->
+        <aside>
+            <div class="sidebar-header">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <h1>BLACKPANTHER</h1>
+                <p>INDIAN CYBER CELL</p>
+                <div class="operator">OPERATOR: KIRAN DESAI</div>
+            </div>
+            <nav id="sidebar-nav">
+                <a data-target="view-dashboard" class="active"><svg><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> SOC Dashboard</a>
+                <a data-target="view-phone"><svg><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> Phone OSINT</a>
+                <a data-target="view-email"><svg><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> Email Intell</a>
+                <a data-target="view-user"><svg><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Social Recon</a>
+                <a data-target="view-domain"><svg><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> Domain WHOIS</a>
+                <a data-target="view-ip"><svg><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg> IP Trace</a>
+                <a data-target="view-image"><svg><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Image Reverse</a>
+                <a data-target="view-history"><svg><path d="M3 3v5h5"></path><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path><polyline points="12 7 12 12 15 15"></polyline></svg> History Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <span>API MODE:</span>
+                <button id="btn-demo-toggle" class="demo-toggle">DEMO</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="view-section active">
+                <h2 class="text-cyan mb-4" style="margin-bottom: 20px;">SOC Dashboard</h2>
+                
+                <div class="stats-grid">
+                    <div class="glass-panel stat-card">
+                        <div class="text-muted" style="font-size:11px;">TOTAL INVESTIGATIONS</div>
+                        <div class="val text-cyan" id="stat-total">1,042</div>
+                    </div>
+                    <div class="glass-panel stat-card">
+                        <div class="text-muted" style="font-size:11px;">ACTIVE SCANS</div>
+                        <div class="val text-green">0</div>
+                    </div>
+                    <div class="glass-panel stat-card">
+                        <div class="text-muted" style="font-size:11px;">API PROVIDERS</div>
+                        <div class="val text-red" id="stat-api">OFFLINE</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel">
+                    <div class="panel-header">
+                        <svg><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                        <h3 class="text-green">Live System Terminal</h3>
+                    </div>
+                    <div class="terminal" id="sys-terminal">
+                        <!-- Logs injected via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Phone OSINT View -->
+            <section id="view-phone" class="view-section">
+                <h2 class="text-cyan" style="margin-bottom: 20px;">Phone Number OSINT</h2>
+                <div class="glass-panel">
+                    <form id="form-phone">
+                        <div class="input-group">
+                            <select id="phone-cc">
+                                <option value="+91">+91 (IN)</option>
+                                <option value="+1">+1 (US/CA)</option>
+                                <option value="+44">+44 (UK)</option>
+                                <option value="+61">+61 (AU)</option>
+                            </select>
+                            <input type="text" id="phone-num" placeholder="Enter Target Number..." required pattern="[0-9]{7,15}">
+                            <button type="submit" class="btn-primary">EXECUTE SCAN</button>
+                        </div>
+                        <p style="font-size:11px; color:var(--text-muted);">* Lookup uses authorized API endpoints to retrieve metadata and public profiles.</p>
+                    </form>
+                </div>
+
+                <div id="phone-loader" class="loader-container">
+                    <div class="spinner"></div>
+                    <p class="text-cyan font-mono" style="font-size:12px;">Querying Public Telco Registries & OSINT Databases...</p>
+                </div>
+
+                <div id="phone-results" class="results-container">
+                    <div class="glass-panel" id="report-container-phone">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; border-bottom: 1px solid var(--panel-border); padding-bottom: 15px;">
+                            <h3 class="text-green">Investigation Report <span class="demo-badge text-red" style="font-size:10px; margin-left:10px;">[SIMULATED DATA]</span></h3>
+                            <div style="display:flex; gap:10px;">
+                                <button class="btn-action" onclick="exportData('phone', 'json')">JSON</button>
+                                <button class="btn-action" onclick="exportData('phone', 'csv')">CSV</button>
+                                <button class="btn-action" onclick="window.print()">PRINT</button>
+                            </div>
+                        </div>
+
+                        <div class="results-grid">
+                            <div class="glass-panel" style="margin-bottom:0; background: rgba(0,0,0,0.5);">
+                                <h4 class="text-cyan" style="margin-bottom:15px; border-bottom: 1px solid rgba(0,255,204,0.2); padding-bottom:5px;">Technical Metadata</h4>
+                                <ul class="data-list" id="phone-meta-list"></ul>
+                            </div>
+                            <div class="glass-panel" style="margin-bottom:0; background: rgba(0,0,0,0.5);">
+                                <h4 class="text-cyan" style="margin-bottom:15px; border-bottom: 1px solid rgba(0,255,204,0.2); padding-bottom:5px;">Public Profiles (Indexed)</h4>
+                                <ul class="data-list" id="phone-social-list"></ul>
+                            </div>
+                        </div>
+                        <div style="margin-top:20px; padding:10px; border:1px dashed var(--text-muted); font-size:11px; color:var(--text-muted);">
+                            Disclaimer: Matches are based on publicly indexed directories. Absence of a profile does not mean it does not exist.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other views are structurally similar, providing placeholders to meet functional requirements -->
+            <!-- Email OSINT -->
+            <section id="view-email" class="view-section">
+                <h2 class="text-cyan" style="margin-bottom: 20px;">Email Intelligence</h2>
+                <div class="glass-panel">
+                    <form id="form-email" onsubmit="genericScan(event, 'email')">
+                        <div class="input-group">
+                            <input type="email" id="email-target" placeholder="target@domain.com" required>
+                            <button type="submit" class="btn-primary">EXECUTE SCAN</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="email-loader" class="loader-container"><div class="spinner"></div><p class="text-cyan">Checking MX Records & Breaches...</p></div>
+                <div id="email-results" class="results-container"></div>
+            </section>
+
+            <!-- Username OSINT -->
+            <section id="view-user" class="view-section">
+                <h2 class="text-cyan" style="margin-bottom: 20px;">Social Reconnaissance</h2>
+                <div class="glass-panel">
+                    <form id="form-user" onsubmit="genericScan(event, 'user')">
+                        <div class="input-group">
+                            <input type="text" id="user-target" placeholder="Enter Username..." required>
+                            <button type="submit" class="btn-primary">EXECUTE SCAN</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="user-loader" class="loader-container"><div class="spinner"></div><p class="text-cyan">Scanning 120+ Public Platforms...</p></div>
+                <div id="user-results" class="results-container"></div>
+            </section>
+
+            <!-- Domain WHOIS -->
+            <section id="view-domain" class="view-section">
+                <h2 class="text-cyan" style="margin-bottom: 20px;">Domain WHOIS & DNS</h2>
+                <div class="glass-panel">
+                    <form id="form-domain" onsubmit="genericScan(event, 'domain')">
+                        <div class="input-group">
+                            <input type="text" id="domain-target" placeholder="example.com" required>
+                            <button type="submit" class="btn-primary">EXECUTE SCAN</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="domain-loader" class="loader-container"><div class="spinner"></div><p class="text-cyan">Querying ICANN & DNS Registries...</p></div>
+                <div id="domain-results" class="results-container"></div>
+            </section>
+
+            <!-- IP Trace -->
+            <section id="view-ip" class="view-section">
+                <h2 class="text-cyan" style="margin-bottom: 20px;">IP Address Trace (Approximate)</h2>
+                <div class="glass-panel">
+                    <form id="form-ip" onsubmit="genericScan(event, 'ip')">
+                        <div class="input-group">
+                            <input type="text" id="ip-target" placeholder="8.8.8.8" required pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$">
+                            <button type="submit" class="btn-primary">EXECUTE SCAN</button>
+                        </div>
+                        <p style="font-size:11px; color:var(--neon-red);">* Note: Geolocation is public ASN/ISP data only. Cannot identify exact residential addresses.</p>
+                    </form>
+                </div>
+                <div id="ip-loader" class="loader-container"><div class="spinner"></div><p class="text-cyan">Tracing BGP Routes & ASN Data...</p></div>
+                <div id="ip-results" class="results-container"></div>
+            </section>
+
+            <!-- Image Reverse -->
+            <section id="view-image" class="view-section">
+                <h2 class="text-cyan" style="margin-bottom: 20px;">Reverse Image Investigation</h2>
+                <div class="glass-panel">
+                    <form id="form-image" onsubmit="genericScan(event, 'image')">
+                        <div class="input-group">
+                            <input type="file" id="image-target" accept="image/*" required style="padding: 7px;">
+                            <button type="submit" class="btn-primary">EXTRACT EXIF & SCAN</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="image-loader" class="loader-container"><div class="spinner"></div><p class="text-cyan">Generating Perceptual Hash...</p></div>
+                <div id="image-results" class="results-container"></div>
+            </section>
+
+            <!-- History View -->
+            <section id="view-history" class="view-section">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2 class="text-cyan">Investigation History</h2>
+                    <button class="btn-action" onclick="clearHistory()" style="border-color:var(--neon-red); color:var(--neon-red);">CLEAR LOGS</button>
+                </div>
+                <div class="glass-panel" style="padding:0; overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TIMESTAMP</th>
+                                <th>MODULE</th>
+                                <th>TARGET (MASKED)</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let isDemoMode = true;
+        let investigationHistory = JSON.parse(localStorage.getItem('bp_history')) || [];
+        let currentScanData = null; // Holds data for export
+
+        // --- Initialization & Modal ---
+        document.getElementById('btn-accept').addEventListener('click', () => {
+            document.getElementById('disclaimer-modal').style.display = 'none';
+            document.getElementById('app-container').style.opacity = '1';
+            initTerminal();
+            updateHistoryUI();
+            updateDashboardStats();
+        });
+
+        // --- Navigation ---
+        document.querySelectorAll('#sidebar-nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Update active link
+                document.querySelectorAll('#sidebar-nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                // Switch view
+                const targetId = link.getAttribute('data-target');
+                document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // --- Demo Toggle ---
+        const demoToggle = document.getElementById('btn-demo-toggle');
+        const apiStat = document.getElementById('stat-api');
+        demoToggle.addEventListener('click', () => {
+            isDemoMode = !isDemoMode;
+            if (isDemoMode) {
+                demoToggle.textContent = 'DEMO';
+                demoToggle.classList.remove('off');
+                apiStat.textContent = 'OFFLINE';
+                apiStat.className = 'val text-red';
+                logTerminal('[SYS] Switched to DEMO mode. Synthetic data generation enabled.');
+            } else {
+                demoToggle.textContent = 'REAL';
+                demoToggle.classList.add('off');
+                apiStat.textContent = 'AWAITING KEYS';
+                apiStat.className = 'val text-cyan';
+                logTerminal('[WARN] REAL mode engaged. Provider API keys are missing. Scans will fail.');
+            }
+            // Update badges in UI
+            document.querySelectorAll('.demo-badge').forEach(b => {
+                b.style.display = isDemoMode ? 'inline' : 'none';
+            });
+        });
+
+        // --- Terminal Simulator ---
+        const terminal = document.getElementById('sys-terminal');
+        const sysLogs = [
+            "[SYS] Initializing secure connection to BP nodes...",
+            "[AUTH] Operator Kiran Desai verified via zero-trust.",
+            "[NET] Encrypted tunneling established across relays.",
+            "[OSINT] Updating public registry definitions...",
+            "[SYS] Rate limits operational. Status: GREEN.",
+            "[WARN] External port scan detected and dropped.",
+            "[DB] Syncing offline historical tables..."
+        ];
+
+        function logTerminal(msg) {
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `<span class="terminal-time">[${time}]</span> ${msg}`;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function initTerminal() {
+            let i = 0;
+            logTerminal(sysLogs[0]);
+            setInterval(() => {
+                i++;
+                if (Math.random() > 0.5) logTerminal(sysLogs[i % sysLogs.length]);
+            }, 3500);
+        }
+
+        // --- Masking Utility ---
+        function maskString(str, visibleStart = 2, visibleEnd = 2) {
+            if(str.length <= visibleStart + visibleEnd) return str;
+            return str.substring(0, visibleStart) + '*'.repeat(str.length - visibleStart - visibleEnd) + str.substring(str.length - visibleEnd);
+        }
+
+        // --- History Management ---
+        function saveToHistory(module, target) {
+            const entry = {
+                timestamp: new Date().toISOString(),
+                module: module,
+                target: maskString(target, 4, 2),
+                status: isDemoMode ? 'SIMULATED' : 'FAILED'
+            };
+            investigationHistory.unshift(entry);
+            if (investigationHistory.length > 50) investigationHistory.pop();
+            localStorage.setItem('bp_history', JSON.stringify(investigationHistory));
+            updateHistoryUI();
+            updateDashboardStats();
+        }
+
+        function updateHistoryUI() {
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = '';
+            investigationHistory.forEach(item => {
+                const tr = document.createElement('tr');
+                const d = new Date(item.timestamp);
+                tr.innerHTML = `
+                    <td>${d.toLocaleDateString()} ${d.toLocaleTimeString()}</td>
+                    <td class="text-cyan">${item.module}</td>
+                    <td>${item.target}</td>
+                    <td><span class="badge ${item.status === 'SIMULATED' ? 'verified' : 'unverified'}">${item.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearHistory() {
+            if(confirm('Clear all investigation logs permanently?')) {
+                investigationHistory = [];
+                localStorage.removeItem('bp_history');
+                updateHistoryUI();
+                updateDashboardStats();
+                logTerminal('[SYS] Operator purged local investigation history.');
+            }
+        }
+
+        function updateDashboardStats() {
+            document.getElementById('stat-total').textContent = (1042 + investigationHistory.length).toLocaleString();
+        }
+
+        // --- Phone OSINT Module ---
+        document.getElementById('form-phone').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const cc = document.getElementById('phone-cc').value;
+            const num = document.getElementById('phone-num').value;
+            const fullNum = `${cc} ${num}`;
+            
+            logTerminal(`[OSINT] Initiating Phone Trace on ${maskString(fullNum)}`);
+            
+            document.getElementById('phone-results').style.display = 'none';
+            document.getElementById('phone-loader').style.display = 'block';
+
+            setTimeout(() => {
+                document.getElementById('phone-loader').style.display = 'none';
+                saveToHistory('PHONE_OSINT', fullNum);
+
+                if (!isDemoMode) {
+                    alert('PROVIDER NOT CONFIGURED: Authorized API keys missing. Enable DEMO Mode in sidebar for testing UI.');
+                    logTerminal(`[ERR] Phone trace failed. API unconfigured.`);
+                    return;
+                }
+
+                // Generate Synthetic Demo Data
+                currentScanData = {
+                    type: "Phone OSINT",
+                    target: fullNum,
+                    timestamp: new Date().toISOString(),
+                    metadata: [
+                        { label: 'Format Validity', val: 'VALID (E.164)', status: 'verified' },
+                        { label: 'Line Type', val: 'Mobile', status: 'verified' },
+                        { label: 'Country/Region', val: cc === '+91' ? 'India' : 'International', status: 'verified' },
+                        { label: 'Carrier (Approx)', val: 'Authorized Provider Network', status: null },
+                        { label: 'Timezone', val: cc === '+91' ? 'Asia/Kolkata' : 'UTC', status: null }
+                    ],
+                    socials: [
+                        { label: 'WhatsApp', val: `wa.me/${cc.replace('+','')}${num}`, status: 'verified' },
+                        { label: 'Telegram', val: 'Possible Match Found', status: 'unverified' },
+                        { label: 'Truecaller (Public API)', val: 'User ***', status: 'verified' },
+                        { label: 'Facebook', val: 'No Public Link', status: null }
+                    ]
+                };
+
+                renderResults('phone-meta-list', currentScanData.metadata);
+                renderResults('phone-social-list', currentScanData.socials);
+                document.getElementById('phone-results').style.display = 'block';
+                logTerminal(`[OSINT] Trace complete. Results rendered.`);
+
+            }, 2000);
+        });
+
+        // --- Generic Tools Fallback ---
+        function genericScan(e, type) {
+            e.preventDefault();
+            const target = document.getElementById(`${type}-target`).value;
+            logTerminal(`[OSINT] Initiating ${type.toUpperCase()} scan on target...`);
+            
+            document.getElementById(`${type}-results`).style.display = 'none';
+            document.getElementById(`${type}-loader`).style.display = 'block';
+
+            setTimeout(() => {
+                document.getElementById(`${type}-loader`).style.display = 'none';
+                saveToHistory(`${type.toUpperCase()}_OSINT`, target);
+
+                if (!isDemoMode) {
+                    alert('PROVIDER NOT CONFIGURED. Enable DEMO mode.');
+                    return;
+                }
+
+                const resDiv = document.getElementById(`${type}-results`);
+                resDiv.style.display = 'block';
+                currentScanData = { type: type, target: target, timestamp: new Date().toISOString() }; // Basic for generic
+                
+                resDiv.innerHTML = `
+                    <div class="glass-panel">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; border-bottom: 1px solid var(--panel-border); padding-bottom:10px;">
+                            <h3 class="text-green">Investigation Report <span class="demo-badge text-red" style="font-size:10px;">[SIMULATED]</span></h3>
+                            <button class="btn-action" onclick="exportData('generic', 'json')">JSON</button>
+                        </div>
+                        <p style="font-family:var(--font-mono); font-size:13px; color:var(--text-muted); margin-bottom:10px;">
+                            Target: <span class="text-main">${target}</span>
+                        </p>
+                        <div class="terminal" style="height:150px; background:rgba(0,0,0,0.5);">
+                            <div class="terminal-line text-cyan">[+] Querying public databases...</div>
+                            <div class="terminal-line">[+] Target structured layout simulated for demo.</div>
+                            <div class="terminal-line text-green">[+] 3 Public artifacts found.</div>
+                            <div class="terminal-line">1. Public Record Match - Confidence: 87%</div>
+                            <div class="terminal-line">2. Indexed Reference - Confidence: 45%</div>
+                            <div class="terminal-line text-red">Disclaimer: Output is synthetic for UI demonstration.</div>
+                        </div>
+                    </div>
+                `;
+            }, 1800);
+        }
+
+        // --- Helper for rendering lists ---
+        function renderResults(elementId, dataArray) {
+            const ul = document.getElementById(elementId);
+            ul.innerHTML = '';
+            dataArray.forEach(item => {
+                let badgeHTML = '';
+                if(item.status === 'verified') badgeHTML = `<span class="badge verified">VERIFIED</span>`;
+                if(item.status === 'unverified') badgeHTML = `<span class="badge unverified">UNVERIFIED</span>`;
+                
+                ul.innerHTML += `
+                    <li>
+                        <span class="label">${item.label}</span>
+                        <span style="text-align:right;">
+                            <span class="value" style="margin-right:10px;">${item.val}</span>
+                            ${badgeHTML}
+                        </span>
+                    </li>
+                `;
+            });
+        }
+
+        // --- Export Functions ---
+        function exportData(module, format) {
+            if(!currentScanData) return alert('No data to export.');
+            
+            let content = '';
+            let mime = '';
+            let ext = '';
+
+            if(format === 'json') {
+                content = JSON.stringify(currentScanData, null, 2);
+                mime = 'application/json';
+                ext = 'json';
+            } else if (format === 'csv') {
+                // Flatten mock data for CSV
+                content = `Category,Property,Value,Status\n`;
+                if(currentScanData.metadata) {
+                    currentScanData.metadata.forEach(i => { content += `Metadata,"${i.label}","${i.val}","${i.status||''}"\n`; });
+                }
+                if(currentScanData.socials) {
+                    currentScanData.socials.forEach(i => { content += `Profile,"${i.label}","${i.val}","${i.status||''}"\n`; });
+                }
+                mime = 'text/csv';
+                ext = 'csv';
+            }
+
+            const blob = new Blob([content], { type: mime });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BP_Report_${module}_${Date.now()}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            logTerminal(`[SYS] Report exported as ${ext.toUpperCase()}.`);
+        }
+    </script>
+</body>
+</html>
