@@ -3,1225 +3,1029 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BLACKPANTHER INDIAN CYBER CELL | OSINT</title>
+    <title>BLACKPANTHER | INDIAN CYBER CELL OSINT</title>
     
-    <!-- Fonts -->
+    <!-- Fonts: Premium, high-tech, readable -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <!-- Phone Number Parser Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/libphonenumber-js/1.10.49/libphonenumber-js.min.js"></script>
 
     <style>
+        /* CSS Variables for Premium Theme */
         :root {
-            /* Color Palette */
-            --bg-dark: #02040a;
-            --bg-panel: rgba(10, 15, 30, 0.65);
-            --bg-panel-hover: rgba(15, 25, 45, 0.85);
+            /* Backgrounds */
+            --bg-deep: #050914;
+            --bg-panel: rgba(13, 20, 36, 0.7);
+            --bg-panel-solid: #0d1424;
+            --bg-input: rgba(0, 0, 0, 0.4);
             
-            --neon-green: #00ff66;
-            --neon-cyan: #00e5ff;
-            --neon-violet: #b537f2;
-            --neon-red: #ff3366;
-            --neon-yellow: #ffea00;
+            /* Accents */
+            --accent-cyan: #00f0ff;
+            --accent-cyan-glow: rgba(0, 240, 255, 0.4);
+            --accent-emerald: #00ffa3;
+            --accent-emerald-glow: rgba(0, 255, 163, 0.4);
+            --accent-danger: #ff3366;
             
-            --text-main: #e2e8f0;
-            --text-muted: #8ba1b7;
+            /* Text */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
             --text-dark: #0f172a;
             
-            --glass-border: rgba(0, 255, 102, 0.25);
-            --glass-border-cyan: rgba(0, 229, 255, 0.3);
+            /* Structural */
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-active: rgba(0, 240, 255, 0.3);
+            --radius-lg: 16px;
+            --radius-md: 8px;
             
             /* Typography */
-            --font-brand: 'Orbitron', sans-serif;
-            --font-ui: 'Rajdhani', sans-serif;
-            --font-mono: 'Fira Code', monospace;
-            
-            /* Effects */
-            --shadow-green: 0 0 10px rgba(0, 255, 102, 0.3), 0 0 20px rgba(0, 255, 102, 0.1);
-            --shadow-cyan: 0 0 10px rgba(0, 229, 255, 0.3), 0 0 20px rgba(0, 229, 255, 0.1);
-            --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --font-brand: 'Outfit', sans-serif;
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background-color: var(--bg-dark);
+            background-color: var(--bg-deep);
             color: var(--text-main);
             font-family: var(--font-ui);
-            overflow-x: hidden;
             height: 100vh;
             display: flex;
+            overflow: hidden;
             background-image: 
-                linear-gradient(rgba(0, 255, 102, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 102, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-            background-position: center center;
-            perspective: 1000px;
+                radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.03), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 255, 163, 0.03), transparent 25%);
         }
 
-        /* 3D Background Elements */
-        .bg-grid-3d {
+        /* Ambient 3D Grid Background */
+        .ambient-grid {
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            top: 0; left: 0; right: 0; bottom: 0;
             z-index: -1;
-            background: radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.05) 0%, transparent 60%);
-            transform-style: preserve-3d;
-            animation: rotateGrid 120s linear infinite;
+            background-image: linear-gradient(var(--border-glass) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--border-glass) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: perspective(1000px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+            animation: gridMove 20s linear infinite;
+            opacity: 0.3;
         }
-
-        @keyframes rotateGrid {
-            0% { transform: rotateX(60deg) rotateZ(0deg) translateY(-200px); }
-            100% { transform: rotateX(60deg) rotateZ(360deg) translateY(-200px); }
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 40px; }
         }
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
-        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--neon-green); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
 
-        /* Layout */
+        /* Sidebar - Massive Branding */
         .sidebar {
-            width: 280px;
-            height: 100vh;
-            background: linear-gradient(180deg, rgba(5, 10, 20, 0.9) 0%, rgba(2, 4, 10, 0.95) 100%);
-            border-right: 1px solid var(--glass-border);
-            backdrop-filter: blur(15px);
+            width: 320px;
+            background: rgba(8, 12, 21, 0.85);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-glass);
             display: flex;
             flex-direction: column;
             z-index: 100;
-            transition: var(--transition-smooth);
-            position: relative;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
         }
 
-        .main-content {
-            flex: 1;
-            height: 100vh;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        /* Branding - Massive & Premium */
-        .brand-container {
-            padding: 30px 20px;
+        .brand-zone {
+            padding: 40px 25px 30px;
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.05) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-glass);
             text-align: center;
-            border-bottom: 1px solid var(--glass-border);
-            background: radial-gradient(circle at top, rgba(0, 255, 102, 0.1), transparent);
         }
 
-        .brand-logo {
-            font-size: 3rem;
-            color: var(--neon-green);
-            text-shadow: var(--shadow-green);
-            margin-bottom: 10px;
-            animation: pulseGlow 2s infinite alternate;
+        .brand-logo-icon {
+            font-size: 3.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 15px var(--accent-cyan-glow));
         }
 
-        .brand-title {
+        .brand-title-main {
             font-family: var(--font-brand);
-            font-size: 1.8rem;
             font-weight: 900;
+            font-size: 2.2rem;
             line-height: 1.1;
-            letter-spacing: 2px;
-            background: linear-gradient(90deg, #fff, var(--neon-green), var(--neon-cyan));
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, var(--text-muted));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
             margin-bottom: 5px;
         }
 
-        .brand-subtitle {
+        .brand-title-sub {
             font-family: var(--font-brand);
-            font-size: 1rem;
-            color: var(--neon-cyan);
-            letter-spacing: 3px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent-emerald);
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
-        .developer-credit {
+        .dev-credit {
+            margin-top: 20px;
             font-family: var(--font-mono);
             font-size: 0.75rem;
-            color: var(--neon-violet);
-            margin-top: 15px;
-            padding: 5px;
-            border: 1px solid rgba(181, 55, 242, 0.3);
+            color: var(--accent-cyan);
+            padding: 8px 12px;
+            border: 1px solid var(--border-active);
             border-radius: 4px;
             display: inline-block;
-            box-shadow: inset 0 0 10px rgba(181, 55, 242, 0.1);
+            background: rgba(0, 240, 255, 0.05);
+            letter-spacing: 1px;
         }
 
-        /* Navigation */
-        .nav-menu {
-            padding: 20px 0;
+        .nav-list {
             flex: 1;
             overflow-y: auto;
+            padding: 20px 0;
+            list-style: none;
         }
 
         .nav-item {
-            padding: 15px 25px;
+            padding: 16px 30px;
             display: flex;
             align-items: center;
             gap: 15px;
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 1.1rem;
             font-weight: 500;
-            transition: var(--transition-smooth);
-            border-left: 3px solid transparent;
             cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
         }
 
-        .nav-item:hover, .nav-item.active {
-            background: linear-gradient(90deg, rgba(0, 255, 102, 0.1), transparent);
-            color: var(--neon-green);
-            border-left-color: var(--neon-green);
-            text-shadow: 0 0 5px rgba(0, 255, 102, 0.5);
+        .nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
+        
+        .nav-item:hover {
+            color: var(--text-main);
+            background: rgba(255,255,255,0.02);
         }
 
-        .nav-item i {
-            width: 20px;
-            text-align: center;
+        .nav-item.active {
+            color: var(--accent-cyan);
+            border-left-color: var(--accent-cyan);
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.1), transparent);
         }
 
-        /* Top Header */
-        .top-header {
-            padding: 20px 40px;
+        /* Main Content */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .topbar {
+            height: 70px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(2, 4, 10, 0.8);
+            padding: 0 40px;
+            background: rgba(8, 12, 21, 0.5);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--glass-border);
-            z-index: 50;
-            position: sticky;
-            top: 0;
+            border-bottom: 1px solid var(--border-glass);
+            z-index: 10;
         }
 
-        .header-title-massive {
+        .module-title {
             font-family: var(--font-brand);
-            font-size: 2.5rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            color: #fff;
-            text-shadow: 0 0 15px rgba(255,255,255,0.3), 0 0 30px var(--neon-green);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .sys-status {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-family: var(--font-mono);
-            font-size: 0.9rem;
-            color: var(--neon-green);
-            background: rgba(0, 255, 102, 0.1);
-            padding: 8px 15px;
+            font-size: 0.8rem;
+            color: var(--accent-emerald);
+            background: rgba(0, 255, 163, 0.1);
+            padding: 6px 12px;
             border-radius: 20px;
-            border: 1px solid var(--neon-green);
-            box-shadow: var(--shadow-green);
+            border: 1px solid rgba(0, 255, 163, 0.3);
         }
 
-        .status-dot {
-            width: 10px; height: 10px;
-            background: var(--neon-green);
+        .dot {
+            width: 8px; height: 8px;
+            background: var(--accent-emerald);
             border-radius: 50%;
-            animation: blink 1s infinite;
+            box-shadow: 0 0 10px var(--accent-emerald);
+            animation: pulse 2s infinite;
         }
 
-        /* Glassmorphism Cards & 3D */
-        .section-container {
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
             padding: 40px;
+            position: relative;
+        }
+
+        .view-section {
             display: none;
-            animation: fadeIn 0.5s ease-out;
-            transform-style: preserve-3d;
+            animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
+        .view-section.active { display: block; }
 
-        .section-container.active {
-            display: block;
-        }
-
+        /* Premium Glass 3D Cards */
         .glass-card {
             background: var(--bg-panel);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
             position: relative;
             overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease;
         }
 
         .glass-card::before {
             content: '';
             position: absolute;
-            top: 0; left: -100%;
-            width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            transform: skewX(-20deg);
-            transition: 0.5s;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            pointer-events: none;
         }
 
-        .glass-card:hover::before { left: 150%; }
-        .glass-card:hover {
-            transform: translateY(-5px) translateZ(10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(0, 255, 102, 0.3);
-            border-color: rgba(0, 255, 102, 0.5);
+        .glass-card.interactive:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-active);
+            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.6), 0 0 20px var(--accent-cyan-glow);
         }
 
-        /* Grid Layouts */
-        .dashboard-grid {
+        /* Forms & Inputs */
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-field {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            outline: none;
+            transition: all 0.3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 0 3px rgba(0, 240, 255, 0.1);
+        }
+
+        select.input-field {
+            flex: 0 0 120px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px auto;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0.05));
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-family: var(--font-brand);
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 16px 32px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-deep);
+            box-shadow: 0 0 20px var(--accent-cyan-glow);
+        }
+
+        .btn-primary:active { transform: scale(0.98); }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-ui);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .btn-danger { color: var(--accent-danger); border-color: rgba(255,51,102,0.3); }
+        .btn-danger:hover { background: rgba(255,51,102,0.1); border-color: var(--accent-danger); }
+
+        /* Validation & Messages */
+        .error-msg {
+            color: var(--accent-danger);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+            font-family: var(--font-mono);
+        }
+
+        /* Scanning UI */
+        .scan-overlay {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .spinner {
+            width: 60px; height: 60px;
+            border: 3px solid rgba(0, 240, 255, 0.1);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .scan-text {
+            font-family: var(--font-mono);
+            color: var(--accent-cyan);
+            letter-spacing: 2px;
+            animation: pulseText 1.5s infinite;
+        }
+
+        /* Results Grid */
+        .results-header {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        
+        .results-meta { font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem; }
+        .results-meta strong { color: var(--text-main); font-size: 1.1rem; }
+
+        .dork-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
             margin-bottom: 30px;
         }
 
-        .panel-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 25px;
-        }
-
-        /* Dashboard Specifics */
-        .stat-value {
-            font-family: var(--font-brand);
-            font-size: 2.5rem;
-            color: var(--neon-cyan);
-            text-shadow: var(--shadow-cyan);
-            margin: 10px 0;
-        }
-        .stat-label {
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-        }
-        .stat-icon {
-            position: absolute;
-            top: 25px; right: 25px;
-            font-size: 2rem;
-            color: rgba(255,255,255,0.1);
-        }
-
-        /* Terminal */
-        .terminal-box {
-            background: #000;
-            border: 1px solid var(--neon-cyan);
-            border-radius: 8px;
-            height: 300px;
-            padding: 15px;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            color: var(--neon-green);
-            overflow-y: auto;
-            box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.2);
-        }
-        .terminal-line { margin-bottom: 5px; opacity: 0.8; }
-        .terminal-line .time { color: var(--text-muted); margin-right: 10px; }
-        .terminal-line .sys { color: var(--neon-cyan); }
-        .terminal-line .err { color: var(--neon-red); }
-
-        /* Forms & Inputs */
-        .osint-form {
+        .dork-card {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            max-width: 600px;
-            margin: 0 auto;
+            transition: all 0.3s;
         }
 
-        .input-group {
-            position: relative;
-            display: flex;
-            gap: 10px;
-        }
-
-        .cyber-input {
-            width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--glass-border);
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: var(--neon-cyan);
-            font-family: var(--font-mono);
-            font-size: 1.1rem;
-            outline: none;
-            transition: var(--transition-smooth);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
-        }
-
-        .cyber-input:focus {
-            border-color: var(--neon-cyan);
-            box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.2), 0 0 15px rgba(0, 229, 255, 0.2);
-        }
-
-        select.cyber-input { width: 120px; flex-shrink: 0; cursor: pointer; }
-
-        .cyber-button {
-            background: rgba(0, 255, 102, 0.1);
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 15px 30px;
-            font-family: var(--font-brand);
-            font-size: 1.1rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            text-transform: uppercase;
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-green);
-        }
-
-        .cyber-button::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0,255,102,0.4), transparent);
-            transition: 0.5s;
-        }
-
-        .cyber-button:hover::before { left: 100%; }
-        .cyber-button:hover {
-            background: var(--neon-green);
-            color: #000;
-            box-shadow: 0 0 20px var(--neon-green);
-            transform: scale(1.02);
-        }
-
-        .cyber-button:disabled {
-            background: rgba(255,255,255,0.05);
+        .dork-card:hover {
             border-color: rgba(255,255,255,0.2);
-            color: rgba(255,255,255,0.3);
-            box-shadow: none;
-            cursor: not-allowed;
-            transform: none;
+            background: rgba(255,255,255,0.02);
         }
 
-        /* Checkbox */
-        .consent-box {
+        .dork-header {
             display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            background: rgba(255, 51, 102, 0.05);
-            border: 1px solid rgba(255, 51, 102, 0.3);
-            padding: 15px;
-            border-radius: 8px;
-        }
-        
-        .consent-box input[type="checkbox"] {
-            width: 20px; height: 20px;
-            accent-color: var(--neon-red);
-            margin-top: 2px;
-            cursor: pointer;
-        }
-        
-        .consent-text { font-size: 0.9rem; color: var(--text-muted); }
-        .consent-text strong { color: var(--neon-red); }
-
-        /* Scanning Animation */
-        .scan-container {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            flex-direction: column;
             align-items: center;
-            gap: 20px;
-        }
-        
-        .radar {
-            width: 150px; height: 150px;
-            border-radius: 50%;
-            border: 2px solid var(--glass-border);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0, 255, 102, 0.2);
-        }
-        
-        .radar::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%; width: 50%; height: 50%;
-            background: linear-gradient(45deg, rgba(0, 255, 102, 0.8), transparent);
-            transform-origin: top left;
-            animation: radarSpin 2s linear infinite;
-        }
-        
-        .scan-text {
-            font-family: var(--font-mono);
-            color: var(--neon-cyan);
-            font-size: 1.2rem;
-            animation: blink 1s infinite;
-        }
-        
-        .scan-logs {
-            width: 100%; max-width: 500px;
-            height: 100px;
-            text-align: left;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            overflow: hidden;
+            gap: 12px;
+            margin-bottom: 15px;
         }
 
-        /* Results UI */
-        .results-container {
-            display: none;
-            animation: slideUp 0.5s ease-out;
-        }
-
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--glass-border);
-        }
-        
-        .badge {
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-family: var(--font-mono);
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .badge-demo { background: rgba(255, 234, 0, 0.2); color: var(--neon-yellow); border: 1px solid var(--neon-yellow); }
-        .badge-high { background: rgba(0, 255, 102, 0.2); color: var(--neon-green); border: 1px solid var(--neon-green); }
-        .badge-med { background: rgba(0, 229, 255, 0.2); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); }
-        .badge-low { background: rgba(181, 55, 242, 0.2); color: var(--neon-violet); border: 1px solid var(--neon-violet); }
-
-        .profile-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .profile-card {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 15px;
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            transition: var(--transition-smooth);
-        }
-        
-        .profile-card:hover {
-            border-color: var(--neon-cyan);
-            background: rgba(0, 229, 255, 0.05);
-            transform: translateX(5px);
-        }
-
-        .profile-icon {
+        .platform-icon {
             width: 40px; height: 40px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            color: #fff;
+            font-size: 1.2rem;
+            color: var(--text-main);
         }
 
-        .profile-info h4 { margin-bottom: 5px; font-size: 1.1rem; color: var(--neon-cyan); }
-        .profile-info p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; }
-        .profile-link {
-            color: var(--neon-green);
-            text-decoration: none;
+        .dork-header h3 { font-size: 1.1rem; font-weight: 600; }
+        .dork-header .badge {
+            margin-left: auto;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            text-transform: uppercase;
             font-family: var(--font-mono);
-            font-size: 0.8rem;
-            display: inline-flex; align-items: center; gap: 5px;
         }
-        .profile-link:hover { text-decoration: underline; }
+
+        .dork-query {
+            background: #000;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent-emerald);
+            word-break: break-all;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0, 255, 163, 0.2);
+            flex: 1;
+        }
+
+        .dork-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-ui);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-search {
+            background: rgba(0, 240, 255, 0.15);
+            color: var(--accent-cyan);
+        }
+        .btn-search:hover { background: rgba(0, 240, 255, 0.3); }
+
+        .btn-copy {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+        .btn-copy:hover { background: rgba(255, 255, 255, 0.1); }
 
         /* History Table */
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        th { font-family: var(--font-brand); color: var(--neon-cyan); text-transform: uppercase; font-size: 0.9rem; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 15px; border-bottom: 1px solid var(--border-glass); }
+        th { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
+        td { font-size: 0.95rem; }
         tr:hover td { background: rgba(255,255,255,0.02); }
         
-        .action-btn {
-            background: none; border: none;
-            color: var(--text-muted); cursor: pointer;
-            padding: 5px; transition: 0.3s;
+        /* Notice Box */
+        .notice-box {
+            background: rgba(0, 240, 255, 0.05);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 15px 20px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-muted);
         }
-        .action-btn:hover { color: var(--neon-green); transform: scale(1.2); }
-        .action-btn.delete:hover { color: var(--neon-red); }
+        .notice-box strong { color: var(--text-main); }
 
-        /* Generic Module Info */
-        .module-info {
-            text-align: center;
-            padding: 50px;
-            border: 1px dashed var(--glass-border);
-            border-radius: 12px;
-            background: rgba(0,0,0,0.3);
-            margin-bottom: 30px;
-        }
-        .module-info i { font-size: 3rem; color: var(--neon-violet); margin-bottom: 15px; }
-        .module-info h3 { font-family: var(--font-brand); margin-bottom: 10px; }
-
-        /* Actions Toolbar */
-        .actions-toolbar {
-            display: flex; gap: 10px; margin-top: 20px;
-            padding-top: 20px; border-top: 1px solid var(--glass-border);
-        }
-        .btn-small {
-            padding: 8px 15px; font-size: 0.9rem;
-            background: transparent; border: 1px solid var(--glass-border);
-            color: var(--text-main); border-radius: 4px; cursor: pointer;
-            transition: 0.3s; display: flex; align-items: center; gap: 8px;
-        }
-        .btn-small:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
-        /* Toast Notifications */
-        #toast-container {
-            position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-            display: flex; flex-direction: column; gap: 10px;
+        /* Toasts */
+        #toast-area {
+            position: fixed; bottom: 30px; right: 30px;
+            display: flex; flex-direction: column; gap: 10px; z-index: 9999;
         }
         .toast {
-            background: rgba(10, 15, 30, 0.9); backdrop-filter: blur(10px);
-            border-left: 4px solid var(--neon-cyan);
-            padding: 15px 20px; border-radius: 4px; color: #fff;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            animation: slideInRight 0.3s ease-out forwards;
-            font-family: var(--font-mono); font-size: 0.9rem;
+            background: var(--bg-panel-solid); border: 1px solid var(--border-glass);
+            padding: 15px 25px; border-radius: var(--radius-md);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: flex; align-items: center; gap: 12px;
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: var(--font-ui); font-size: 0.95rem;
         }
+        .toast.success { border-left: 4px solid var(--accent-emerald); }
+        .toast.error { border-left: 4px solid var(--accent-danger); }
 
         /* Animations */
-        @keyframes pulseGlow { from { text-shadow: 0 0 10px var(--neon-green); } to { text-shadow: 0 0 30px var(--neon-green), 0 0 10px #fff; } }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes radarSpin { 100% { transform: rotate(360deg); } }
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } }
+        @keyframes pulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* Section Titles */
-        .section-title {
-            font-family: var(--font-brand);
-            font-size: 2rem;
-            color: #fff;
-            margin-bottom: 30px;
-            border-left: 5px solid var(--neon-violet);
-            padding-left: 15px;
-            text-transform: uppercase;
-        }
-
-        /* Disclaimer Overlay */
-        #disclaimer-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
-            z-index: 10000; display: flex; align-items: center; justify-content: center;
-        }
-        .disclaimer-box {
-            background: #0a0a0a; border: 1px solid var(--neon-red);
-            padding: 40px; max-width: 600px; border-radius: 12px; text-align: center;
-            box-shadow: 0 0 50px rgba(255, 51, 102, 0.2);
-        }
-        .disclaimer-box h2 { color: var(--neon-red); font-family: var(--font-brand); margin-bottom: 20px; font-size: 2rem; }
-        .disclaimer-box p { margin-bottom: 15px; line-height: 1.6; color: var(--text-muted); }
-        .disclaimer-box .brand-highlight { color: var(--neon-cyan); font-weight: bold; }
-
+        /* Responsive */
+        .menu-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        
         @media (max-width: 900px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--glass-border); padding: 10px; }
-            .brand-container { display: none; } /* Hide large brand in mobile sidebar, rely on top header */
-            .nav-menu { display: flex; flex-direction: row; padding: 0; }
-            .nav-item { padding: 10px; font-size: 0.9rem; }
-            .nav-item span { display: none; }
-            .panel-grid { grid-template-columns: 1fr; }
-            .header-title-massive { font-size: 1.5rem; }
+            .sidebar { position: fixed; left: -320px; height: 100%; }
+            .sidebar.open { left: 0; }
+            .menu-toggle { display: block; }
+            .dork-grid { grid-template-columns: 1fr; }
+            .input-group { flex-direction: column; }
+            select.input-field { width: 100%; }
+            .topbar { padding: 0 20px; }
+            .content-area { padding: 20px; }
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; color: black; overflow: visible; }
+            .sidebar, .topbar, .ambient-grid, .btn-action, .btn-primary, #toast-area { display: none !important; }
+            .main-wrapper { flex: none; display: block; }
+            .content-area { padding: 0; overflow: visible; }
+            .glass-card { box-shadow: none; border: 1px solid #ccc; background: white; color: black; break-inside: avoid; }
+            .dork-query { background: #f0f0f0; color: #333; border: 1px solid #ddd; }
+            .text-muted { color: #666; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 3D Background Element -->
-    <div class="bg-grid-3d"></div>
+    <div class="ambient-grid"></div>
 
-    <!-- Initial Disclaimer -->
-    <div id="disclaimer-overlay">
-        <div class="disclaimer-box">
-            <h2>RESTRICTED SYSTEM</h2>
-            <p>Welcome to <span class="brand-highlight">BLACKPANTHER INDIAN CYBER CELL</span>, developed by <span class="brand-highlight">KIRAN DESAI</span>.</p>
-            <p>This is an independent, premium OSINT dashboard demonstration. It is <strong>NOT</strong> an official government or police portal. All data retrieved is either public, user-provided, or generated as synthetic demo data for visualization purposes.</p>
-            <p>Unauthorized access to private systems, doxxing, or malicious tracking is strictly prohibited and illegal.</p>
-            <button class="cyber-button" style="margin-top: 20px;" onclick="document.getElementById('disclaimer-overlay').style.display='none'">I ACKNOWLEDGE</button>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand-zone">
+            <i class="fa-solid fa-fingerprint brand-logo-icon"></i>
+            <div class="brand-title-main">BLACKPANTHER</div>
+            <div class="brand-title-sub">Indian Cyber Cell</div>
+            <div class="dev-credit">DEV: KIRAN DESAI</div>
         </div>
-    </div>
-
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-        <div class="brand-container">
-            <i class="fa-solid fa-user-secret brand-logo"></i>
-            <div class="brand-title">BLACKPANTHER</div>
-            <div class="brand-subtitle">INDIAN CYBER CELL</div>
-            <div class="developer-credit">DEV: KIRAN DESAI</div>
-        </div>
-        
-        <nav class="nav-menu">
-            <a class="nav-item active" data-target="sec-dashboard" onclick="nav(this)">
-                <i class="fa-solid fa-chart-line"></i> <span>Command Center</span>
-            </a>
-            <a class="nav-item" data-target="sec-phone" onclick="nav(this)">
-                <i class="fa-solid fa-mobile-screen-button"></i> <span>Phone Intel</span>
-            </a>
-            <a class="nav-item" data-target="sec-email" onclick="nav(this)">
-                <i class="fa-solid fa-envelope-circle-check"></i> <span>Email OSINT</span>
-            </a>
-            <a class="nav-item" data-target="sec-username" onclick="nav(this)">
-                <i class="fa-solid fa-user-ninja"></i> <span>Username Search</span>
-            </a>
-            <a class="nav-item" data-target="sec-domain" onclick="nav(this)">
-                <i class="fa-solid fa-globe"></i> <span>Domain Intel</span>
-            </a>
-            <a class="nav-item" data-target="sec-ip" onclick="nav(this)">
-                <i class="fa-solid fa-network-wired"></i> <span>IP Tracker</span>
-            </a>
-            <a class="nav-item" data-target="sec-image" onclick="nav(this)">
-                <i class="fa-solid fa-image"></i> <span>Image Analysis</span>
-            </a>
-            <a class="nav-item" data-target="sec-history" onclick="nav(this)">
-                <i class="fa-solid fa-folder-open"></i> <span>Case Files</span>
-            </a>
-        </nav>
+        <ul class="nav-list">
+            <li class="nav-item active" data-target="view-phone" onclick="navigate(this)">
+                <i class="fa-solid fa-mobile-screen-button"></i> Phone OSINT
+            </li>
+            <li class="nav-item" data-target="view-email" onclick="navigate(this)">
+                <i class="fa-solid fa-envelope"></i> Email Intel
+            </li>
+            <li class="nav-item" data-target="view-user" onclick="navigate(this)">
+                <i class="fa-solid fa-user-ninja"></i> Username Search
+            </li>
+            <li class="nav-item" data-target="view-domain" onclick="navigate(this)">
+                <i class="fa-solid fa-globe"></i> Domain Trace
+            </li>
+            <li class="nav-item" data-target="view-ip" onclick="navigate(this)">
+                <i class="fa-solid fa-network-wired"></i> IP Lookup
+            </li>
+            <li class="nav-item" data-target="view-history" onclick="navigate(this)">
+                <i class="fa-solid fa-folder-open"></i> Investigation Log
+            </li>
+        </ul>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-        
-        <!-- Header -->
-        <header class="top-header">
-            <div class="header-title-massive">
-                BLACKPANTHER OSINT
+    <!-- Main Content -->
+    <main class="main-wrapper">
+        <header class="topbar">
+            <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="module-title" id="top-title">
+                <i class="fa-solid fa-mobile-screen-button"></i> Phone OSINT
             </div>
-            <div class="sys-status">
-                <div class="status-dot"></div>
-                SYSTEM ONLINE | SECURE
+            <div class="status-indicator">
+                <div class="dot"></div> SYSTEM ONLINE
             </div>
         </header>
 
-        <!-- Section: Dashboard -->
-        <section id="sec-dashboard" class="section-container active">
-            <h2 class="section-title">Command Center</h2>
+        <div class="content-area">
             
-            <div class="dashboard-grid">
-                <div class="glass-card">
-                    <i class="fa-solid fa-microscope stat-icon"></i>
-                    <div class="stat-label">Total Investigations</div>
-                    <div class="stat-value" id="stat-total">1,042</div>
-                    <div class="text-muted" style="font-size: 0.8rem; color: var(--neon-green);">+12 today</div>
-                </div>
-                <div class="glass-card">
-                    <i class="fa-solid fa-satellite-dish stat-icon"></i>
-                    <div class="stat-label">Active Scans</div>
-                    <div class="stat-value">3</div>
-                    <div class="text-muted" style="font-size: 0.8rem; color: var(--neon-cyan);">Background processing</div>
-                </div>
-                <div class="glass-card">
-                    <i class="fa-solid fa-server stat-icon"></i>
-                    <div class="stat-label">Data Providers</div>
-                    <div class="stat-value">24</div>
-                    <div class="text-muted" style="font-size: 0.8rem;">Authorized APIs linked</div>
-                </div>
-                <div class="glass-card">
-                    <i class="fa-solid fa-shield-halved stat-icon"></i>
-                    <div class="stat-label">Threat Level</div>
-                    <div class="stat-value" style="color: var(--neon-yellow);">ELEVATED</div>
-                    <div class="text-muted" style="font-size: 0.8rem;">Regional monitoring active</div>
-                </div>
-            </div>
-
-            <div class="panel-grid">
-                <!-- Fake Map / Network Viz -->
-                <div class="glass-card" style="min-height: 350px; position: relative; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                    <div style="position:absolute; top:20px; left:20px; font-family:var(--font-brand); color:var(--neon-cyan);">GLOBAL NODE NETWORK</div>
-                    <!-- CSS simulated nodes -->
-                    <div style="width:100%; height:100%; position:absolute; top:0; left:0; opacity:0.5; background: radial-gradient(circle, rgba(0,255,102,0.1) 10%, transparent 10%) 0 0 / 20px 20px;"></div>
-                    <div class="status-dot" style="position:absolute; top:40%; left:30%; box-shadow: 0 0 20px var(--neon-green);"></div>
-                    <div class="status-dot" style="position:absolute; top:60%; left:70%; background:var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan);"></div>
-                    <div class="status-dot" style="position:absolute; top:20%; left:50%; background:var(--neon-violet); box-shadow: 0 0 20px var(--neon-violet);"></div>
-                    
-                    <!-- SVG lines connecting dots -->
-                    <svg width="100%" height="100%" style="position:absolute; top:0; left:0;">
-                        <line x1="30%" y1="40%" x2="70%" y2="60%" stroke="rgba(0,255,102,0.2)" stroke-width="2" />
-                        <line x1="30%" y1="40%" x2="50%" y2="20%" stroke="rgba(0,229,255,0.2)" stroke-width="2" />
-                    </svg>
-                </div>
-
-                <!-- Live Terminal -->
-                <div class="glass-card">
-                    <div style="font-family:var(--font-brand); color:var(--neon-violet); margin-bottom:15px;">LIVE SYSTEM LOGS</div>
-                    <div class="terminal-box" id="live-terminal">
-                        <div class="terminal-line"><span class="time">[00:00:00]</span><span class="sys">System initialized by KIRAN DESAI.</span></div>
-                        <div class="terminal-line"><span class="time">[00:00:01]</span><span class="sys">Firebase DB connection established.</span></div>
+            <!-- PHONE MODULE (CORE) -->
+            <section id="view-phone" class="view-section active">
+                <div class="glass-card interactive" id="phone-input-card">
+                    <div class="notice-box">
+                        <strong>PUBLIC DATA INVESTIGATION:</strong> Enter a phone number to generate targeted open-source intelligence (OSINT) search queries across the public web and social platforms. This system does not bypass privacy settings or access private databases.
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section: Phone Intel -->
-        <section id="sec-phone" class="section-container">
-            <h2 class="section-title">Phone Number OSINT</h2>
-            
-            <div class="glass-card" id="phone-input-card">
-                <div class="module-info">
-                    <i class="fa-solid fa-mobile-retro"></i>
-                    <h3>TARGET ACQUISITION</h3>
-                    <p class="text-muted">Enter a mobile number to scan authorized public sources for linked social media profiles, carrier data, and public footprints.</p>
-                </div>
-
-                <div class="osint-form">
+                    
                     <div class="input-group">
-                        <select class="cyber-input" id="phone-cc">
-                            <option value="+91">+91 (IN)</option>
-                            <option value="+1">+1 (US)</option>
-                            <option value="+44">+44 (UK)</option>
-                            <option value="+61">+61 (AU)</option>
+                        <select id="phone-cc" class="input-field">
+                            <option value="IN">🇮🇳 +91 (India)</option>
+                            <option value="US">🇺🇸 +1 (USA/CA)</option>
+                            <option value="GB">🇬🇧 +44 (UK)</option>
+                            <option value="AU">🇦🇺 +61 (Aus)</option>
+                            <option value="CA">🇨🇦 +1 (Canada)</option>
+                            <option value="AE">🇦🇪 +971 (UAE)</option>
+                            <option value="PK">🇵🇰 +92 (Pak)</option>
+                            <option value="BD">🇧🇩 +880 (Bang)</option>
                         </select>
-                        <input type="text" class="cyber-input" id="phone-number" placeholder="Enter target number (e.g. 9876543210)" pattern="[0-9]{10,12}">
+                        <input type="tel" id="phone-input" class="input-field" placeholder="Enter target number (e.g. 9876543210)">
                     </div>
+                    <div id="phone-error" class="error-msg"></div>
                     
-                    <div class="consent-box">
-                        <input type="checkbox" id="phone-consent">
-                        <div class="consent-text">
-                            <strong>AUTHORIZATION REQUIRED:</strong> I confirm that I have lawful authorization to perform an OSINT scan on this number, or I am performing this search on my own number. I understand this tool accesses <strong>public data only</strong>.
-                        </div>
-                    </div>
-
-                    <button class="cyber-button" id="btn-scan-phone" onclick="startPhoneScan()">Initiate Trace Sequence</button>
+                    <button class="btn-primary" onclick="initiatePhoneSearch()" style="width: 100%; margin-top: 10px;">
+                        <i class="fa-solid fa-radar"></i> Generate Intel Queries
+                    </button>
                 </div>
-            </div>
 
-            <!-- Scanning Animation -->
-            <div class="glass-card scan-container" id="phone-scan-ui">
-                <h3 class="scan-text">ESTABLISHING CONNECTION...</h3>
-                <div class="radar"></div>
-                <div class="scan-logs" id="phone-scan-logs"></div>
-            </div>
+                <!-- Scanning Overlay -->
+                <div class="glass-card scan-overlay" id="phone-scanning">
+                    <div class="spinner"></div>
+                    <h3 class="scan-text">COMPILING OSINT FOOTPRINT...</h3>
+                    <p style="color: var(--text-muted); font-family: var(--font-mono); font-size:0.9rem;">Formulating target syntax and cross-referencing nodes.</p>
+                </div>
 
-            <!-- Results Dashboard -->
-            <div id="phone-results-ui" class="results-container">
-                <div class="glass-card" style="margin-bottom: 20px;">
-                    <div class="report-header">
+                <!-- Results Area -->
+                <div id="phone-results" style="display: none; margin-top: 30px;">
+                    <div class="results-header">
                         <div>
-                            <h3 style="font-family: var(--font-brand); color: var(--neon-cyan); margin-bottom: 5px;">INTELLIGENCE REPORT</h3>
-                            <div style="font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-muted);" id="rep-phone-target">Target: ********</div>
+                            <h2 style="font-family: var(--font-brand); margin-bottom: 5px;">Investigation Package Generated</h2>
+                            <div class="results-meta">Target: <strong id="res-target-phone"></strong> | Standardized: <strong id="res-std-phone"></strong></div>
                         </div>
-                        <div style="text-align: right;">
-                            <span class="badge badge-demo">SYNTHETIC DEMO DATA</span>
-                            <div style="margin-top: 5px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);" id="rep-phone-time"></div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-secondary" onclick="exportData('phone')"><i class="fa-solid fa-download"></i> Export JSON</button>
+                            <button class="btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
+                            <button class="btn-secondary" onclick="resetPhoneSearch()"><i class="fa-solid fa-rotate-left"></i> New</button>
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-family: var(--font-mono);">
-                        <div>
-                            <p><strong>Carrier:</strong> <span style="color:var(--neon-green);" id="rep-phone-carrier">Airtel India</span></p>
-                            <p><strong>Region:</strong> <span style="color:var(--neon-green);" id="rep-phone-region">Maharashtra, IN</span></p>
-                            <p><strong>Line Type:</strong> <span style="color:var(--neon-green);">Mobile</span></p>
-                        </div>
-                        <div>
-                            <p><strong>Risk Score:</strong> <span style="color:var(--neon-yellow);">Low (12/100)</span></p>
-                            <p><strong>Data Breaches:</strong> <span style="color:var(--neon-red);">2 found in public dumps</span></p>
-                        </div>
+                    <div class="notice-box" style="border-left-color: var(--accent-emerald); background: rgba(0, 255, 163, 0.05);">
+                        Search queries have been formulated. Click <strong>Search Web</strong> to execute the query in a new tab via Google. Note that a lack of results means the data is not publicly indexed.
+                    </div>
+
+                    <div class="dork-grid" id="phone-dorks-container">
+                        <!-- Populated by JS -->
                     </div>
                 </div>
+            </section>
 
-                <h3 style="font-family: var(--font-brand); margin: 30px 0 15px 0;">Discovered Social Profiles</h3>
-                <div class="profile-grid" id="phone-profiles-grid">
-                    <!-- Populated by JS -->
+            <!-- EMAIL MODULE -->
+            <section id="view-email" class="view-section">
+                <div class="glass-card interactive">
+                    <div class="notice-box">Generate dorks to find exposed email addresses in public documents, paste sites, and social profiles.</div>
+                    <div class="input-group">
+                        <input type="email" id="email-input" class="input-field" placeholder="target@example.com">
+                    </div>
+                    <button class="btn-primary" onclick="generateSimpleDorks('email')">Scan Email Footprint</button>
                 </div>
+                <div id="email-results" style="display:none; margin-top:30px;">
+                    <div class="dork-grid" id="email-dorks-container"></div>
+                </div>
+            </section>
 
-                <div class="actions-toolbar">
-                    <button class="btn-small" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Report</button>
-                    <button class="btn-small" onclick="exportJSON('phone')"><i class="fa-solid fa-file-code"></i> Export JSON</button>
-                    <button class="btn-small" onclick="resetPhoneScan()"><i class="fa-solid fa-rotate-left"></i> New Scan</button>
+            <!-- USERNAME MODULE -->
+            <section id="view-user" class="view-section">
+                <div class="glass-card interactive">
+                    <div class="notice-box">Search for a specific username handle across major platforms using targeted site operators.</div>
+                    <div class="input-group">
+                        <input type="text" id="user-input" class="input-field" placeholder="Enter username (e.g. target_user_123)">
+                    </div>
+                    <button class="btn-primary" onclick="generateSimpleDorks('user')">Hunt Username</button>
                 </div>
-            </div>
-        </section>
+                <div id="user-results" style="display:none; margin-top:30px;">
+                    <div class="dork-grid" id="user-dorks-container"></div>
+                </div>
+            </section>
 
-        <!-- Section: Email Intel (Placeholder style for other modules) -->
-        <section id="sec-email" class="section-container">
-            <h2 class="section-title">Email Intelligence</h2>
-            <div class="glass-card">
-                <div class="module-info">
-                    <i class="fa-solid fa-at"></i>
-                    <h3>EMAIL VECTOR ANALYSIS</h3>
-                    <p class="text-muted">Validate formats, extract domains, check DNS/MX records, and query public breach databases.</p>
+            <!-- DOMAIN MODULE -->
+            <section id="view-domain" class="view-section">
+                <div class="glass-card interactive">
+                    <div class="notice-box">Generate lookup links for WHOIS, DNS records, subdomains, and threat intelligence.</div>
+                    <div class="input-group">
+                        <input type="text" id="domain-input" class="input-field" placeholder="example.com">
+                    </div>
+                    <button class="btn-primary" onclick="generateSimpleDorks('domain')">Analyze Infrastructure</button>
                 </div>
-                <div class="osint-form">
-                    <input type="email" class="cyber-input" id="email-input" placeholder="target@domain.com">
-                    <button class="cyber-button" onclick="showDemoToast()">Analyze Vector</button>
+                <div id="domain-results" style="display:none; margin-top:30px;">
+                    <div class="dork-grid" id="domain-dorks-container"></div>
                 </div>
-                <p style="text-align:center; margin-top:20px; color:var(--neon-yellow); font-family:var(--font-mono); font-size:0.85rem;">* Module operating in DEMO mode. API integration required for live data.</p>
-            </div>
-        </section>
+            </section>
 
-        <!-- Section: Username -->
-        <section id="sec-username" class="section-container">
-            <h2 class="section-title">Username Discovery</h2>
-            <div class="glass-card">
-                <div class="module-info">
-                    <i class="fa-solid fa-users-viewfinder"></i>
-                    <h3>CROSS-PLATFORM QUERY</h3>
-                    <p class="text-muted">Hunt for identical usernames across 300+ social media platforms and forums.</p>
+            <!-- IP MODULE -->
+            <section id="view-ip" class="view-section">
+                <div class="glass-card interactive">
+                    <div class="notice-box">Generate links to public IP geolocation and reputation databases.</div>
+                    <div class="input-group">
+                        <input type="text" id="ip-input" class="input-field" placeholder="8.8.8.8">
+                    </div>
+                    <button class="btn-primary" onclick="generateSimpleDorks('ip')">Trace IP Route</button>
                 </div>
-                <div class="osint-form">
-                    <input type="text" class="cyber-input" placeholder="Enter username handle">
-                    <button class="cyber-button" onclick="showDemoToast()">Initiate Hunt</button>
+                <div id="ip-results" style="display:none; margin-top:30px;">
+                    <div class="dork-grid" id="ip-dorks-container"></div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Section: Domain -->
-        <section id="sec-domain" class="section-container">
-            <h2 class="section-title">Domain Intelligence</h2>
-            <div class="glass-card">
-                <div class="module-info">
-                    <i class="fa-solid fa-sitemap"></i>
-                    <h3>INFRASTRUCTURE MAPPING</h3>
-                    <p class="text-muted">Retrieve WHOIS records, DNS configurations, subdomains, and associated IP addresses.</p>
+            <!-- HISTORY MODULE -->
+            <section id="view-history" class="view-section">
+                <div class="glass-card">
+                    <div class="results-header">
+                        <h2 style="font-family: var(--font-brand);">Local Investigation Log</h2>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-secondary" onclick="exportHistoryCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                            <button class="btn-secondary btn-danger" onclick="clearHistory()"><i class="fa-solid fa-trash"></i> Purge All</button>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-muted); margin-bottom:20px; font-size:0.9rem;">Logs are stored securely in your browser's local storage.</p>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Type</th>
+                                    <th>Target Data</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-tbody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="osint-form">
-                    <input type="text" class="cyber-input" placeholder="example.com">
-                    <button class="cyber-button" onclick="showDemoToast()">Map Infrastructure</button>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Section: IP -->
-        <section id="sec-ip" class="section-container">
-            <h2 class="section-title">IP Intelligence</h2>
-            <div class="glass-card">
-                <div class="module-info">
-                    <i class="fa-solid fa-location-crosshairs"></i>
-                    <h3>GEOLOCATION & ASN</h3>
-                    <p class="text-muted">Approximate public geolocation, ISP details, and reputation check.</p>
-                    <p style="font-size:0.8rem; color:var(--neon-red); margin-top:10px;">Note: IP Geolocation is approximate and does not yield precise residential addresses.</p>
-                </div>
-                <div class="osint-form">
-                    <input type="text" class="cyber-input" placeholder="IPv4 or IPv6 Address">
-                    <button class="cyber-button" onclick="showDemoToast()">Trace IP Route</button>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Section: Image -->
-        <section id="sec-image" class="section-container">
-            <h2 class="section-title">Image Analysis</h2>
-            <div class="glass-card">
-                <div class="module-info">
-                    <i class="fa-solid fa-fingerprint"></i>
-                    <h3>EXIF & REVERSE SEARCH</h3>
-                    <p class="text-muted">Extract hidden metadata and interface with reverse image search providers.</p>
-                </div>
-                <div class="osint-form">
-                    <input type="file" class="cyber-input" accept="image/*">
-                    <button class="cyber-button" onclick="showDemoToast()">Extract Data</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section: History -->
-        <section id="sec-history" class="section-container">
-            <h2 class="section-title">Case Files (History)</h2>
-            <div class="glass-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <p class="text-muted">Local investigation log. Data is stored on your device.</p>
-                    <button class="btn-small" onclick="clearHistory()"><i class="fa-solid fa-trash"></i> Purge Records</button>
-                </div>
-                
-                <div class="table-responsive">
-                    <table id="history-table">
-                        <thead>
-                            <tr>
-                                <th>Case ID</th>
-                                <th>Type</th>
-                                <th>Target</th>
-                                <th>Timestamp</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-body">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <footer style="text-align:center; padding: 20px; color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem; border-top:1px solid var(--glass-border); margin-top:auto;">
-            BLACKPANTHER INDIAN CYBER CELL OSINT SYSTEM <br>
-            <span style="color:var(--neon-violet);">DEVELOPED BY KIRAN DESAI</span> &copy; 2023-2024
-        </footer>
+        </div>
     </main>
 
-    <!-- Toasts container -->
-    <div id="toast-container"></div>
+    <div id="toast-area"></div>
 
-    <!-- Application Logic -->
     <script>
-        // --- 1. FIREBASE SETUP (As requested in prompt) ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDbZ4T8264CDQ5LSoH_4L0luB5VKQbiqkU",
-            authDomain: "batrisi-latest-app.firebaseapp.com",
-            projectId: "batrisi-latest-app",
-            storageBucket: "batrisi-latest-app.firebasestorage.app",
-            messagingSenderId: "175592360155",
-            appId: "1:175592360155:web:ba95f9aba4558fda9d64fe"
-        };
-        
-        let db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            logToTerminal("Firebase connection initialized.");
-        } catch (e) {
-            console.error("Firebase init error", e);
-            logToTerminal("Firebase init failed. Running in Local Mode.", true);
+        // --- UI & NAVIGATION ---
+        function navigate(element) {
+            // Mobile menu close
+            document.getElementById('sidebar').classList.remove('open');
+
+            // Nav highlight
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // View switching
+            const targetId = element.getAttribute('data-target');
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(targetId).classList.add('active');
+
+            // Title update
+            const titleHtml = element.innerHTML;
+            document.getElementById('top-title').innerHTML = titleHtml;
+
+            if(targetId === 'view-history') renderHistory();
         }
 
-        // --- 2. UI UTILITIES ---
-        function nav(el) {
-            // Update nav active state
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            
-            // Show target section
-            const target = el.getAttribute('data-target');
-            document.querySelectorAll('.section-container').forEach(s => {
-                s.classList.remove('active');
-            });
-            document.getElementById(target).classList.add('active');
-            
-            logToTerminal(`Accessed module: ${target}`);
-            
-            // Refresh history if opened
-            if(target === 'sec-history') loadHistory();
-        }
-
-        function showToast(msg, type = 'info') {
-            const container = document.getElementById('toast-container');
+        function showToast(msg, type = 'success') {
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            if(type === 'error') toast.style.borderLeftColor = 'var(--neon-red)';
-            toast.innerHTML = `<i class="fa-solid fa-info-circle"></i> ${msg}`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 3000);
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-triangle-exclamation';
+            const color = type === 'success' ? 'var(--accent-emerald)' : 'var(--accent-danger)';
+            toast.innerHTML = `<i class="fa-solid ${icon}" style="color:${color}; font-size:1.2rem;"></i> ${msg}`;
+            
+            const area = document.getElementById('toast-area');
+            area.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s reverse forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
-        function showDemoToast() {
-            showToast("Module in Demo Mode. Results are synthetic.", "info");
+        // --- GLOBAL UTILS ---
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Query copied to clipboard');
+            }).catch(err => {
+                showToast('Failed to copy', 'error');
+            });
         }
 
-        // --- 3. TERMINAL LOGIC ---
-        const terminalBox = document.getElementById('live-terminal');
-        const hackerLines = [
-            "Scanning port arrays...",
-            "Bypassing proxy node 4...",
-            "Decrypting public handshake...",
-            "Querying public DNS records...",
-            "Analyzing packet headers...",
-            "Syncing with remote intelligence feeds..."
-        ];
-
-        function logToTerminal(msg, isErr = false) {
-            const now = new Date();
-            const timeStr = now.toTimeString().split(' ')[0];
-            const div = document.createElement('div');
-            div.className = 'terminal-line';
-            div.innerHTML = `<span class="time">[${timeStr}]</span><span class="${isErr?'err':'sys'}">${msg}</span>`;
-            terminalBox.appendChild(div);
-            terminalBox.scrollTop = terminalBox.scrollHeight;
+        function getGoogleUrl(query) {
+            return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
         }
 
-        setInterval(() => {
-            if(Math.random() > 0.7) {
-                logToTerminal(hackerLines[Math.floor(Math.random() * hackerLines.length)]);
-            }
-        }, 3000);
+        // Input Enter Key Listeners
+        document.getElementById('phone-input').addEventListener('keypress', function(e) { if(e.key === 'Enter') initiatePhoneSearch(); });
+        document.getElementById('email-input').addEventListener('keypress', function(e) { if(e.key === 'Enter') generateSimpleDorks('email'); });
+        document.getElementById('user-input').addEventListener('keypress', function(e) { if(e.key === 'Enter') generateSimpleDorks('user'); });
+        document.getElementById('domain-input').addEventListener('keypress', function(e) { if(e.key === 'Enter') generateSimpleDorks('domain'); });
+        document.getElementById('ip-input').addEventListener('keypress', function(e) { if(e.key === 'Enter') generateSimpleDorks('ip'); });
 
-        // --- 4. OSINT PHONE LOGIC (The Core Feature) ---
-        let currentReportData = null;
+        // --- DATA STATE ---
+        let currentReport = null; // Holds JSON for export
 
-        function startPhoneScan() {
-            const cc = document.getElementById('phone-cc').value;
-            const num = document.getElementById('phone-number').value;
-            const consent = document.getElementById('phone-consent').checked;
+        // --- PHONE NUMBER LOGIC ---
+        function initiatePhoneSearch() {
+            const rawNum = document.getElementById('phone-input').value.trim();
+            const country = document.getElementById('phone-cc').value;
+            const errorDiv = document.getElementById('phone-error');
+            
+            errorDiv.style.display = 'none';
 
-            // Validation
-            if(!num || num.length < 5) {
-                showToast("Invalid number format.", "error");
-                return;
-            }
-            if(!consent) {
-                showToast("Authorization consent is required.", "error");
+            if (!rawNum) {
+                errorDiv.innerText = "Error: Input cannot be empty.";
+                errorDiv.style.display = 'block';
                 return;
             }
 
-            const fullNum = `${cc} ${num}`;
-            
-            // UI Switch
-            document.getElementById('phone-input-card').style.display = 'none';
-            document.getElementById('phone-scan-ui').style.display = 'flex';
-            
-            const logsBox = document.getElementById('phone-scan-logs');
-            logsBox.innerHTML = '';
-            
-            logToTerminal(`Initiated phone scan on ${fullNum}`);
+            let parsedNumber, formattedIntl, formattedNatl;
 
-            // Fake Scanning Sequence
-            const scanSteps = [
-                "Connecting to telco registries...",
-                "Retrieving HLR lookup data...",
-                "Cross-referencing global social graphs...",
-                "Checking public breach databases (HaveIBeenPwned API)...",
-                "Compiling metadata fingerprints..."
-            ];
-
-            let step = 0;
-            const scanInterval = setInterval(() => {
-                if (step < scanSteps.length) {
-                    logsBox.innerHTML += `<div>> ${scanSteps[step]}</div>`;
-                    step++;
+            try {
+                // Using libphonenumber-js from CDN
+                const phoneNumber = libphonenumber.parsePhoneNumber(rawNum, country);
+                
+                if (phoneNumber && phoneNumber.isValid()) {
+                    parsedNumber = phoneNumber.number; // e.g. +919876543210
+                    formattedIntl = phoneNumber.formatInternational();
+                    formattedNatl = phoneNumber.formatNational();
                 } else {
-                    clearInterval(scanInterval);
-                    generateFakeResults(fullNum);
+                    throw new Error("Invalid number logic");
                 }
-            }, 800);
+            } catch (e) {
+                // Fallback / Error handling
+                errorDiv.innerText = "Error: Invalid phone number format for selected region.";
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Validated. Show scanning.
+            document.getElementById('phone-input-card').style.display = 'none';
+            document.getElementById('phone-scanning').style.display = 'flex';
+
+            // Simulate processing time for UX
+            setTimeout(() => {
+                document.getElementById('phone-scanning').style.display = 'none';
+                renderPhoneResults(parsedNumber, formattedIntl, formattedNatl, rawNum);
+            }, 1200);
         }
 
-        function generateFakeResults(targetNumber) {
-            // Create synthetic data payload
-            const reportId = 'BP-PH-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        function renderPhoneResults(e164, intl, natl, raw) {
+            document.getElementById('phone-results').style.display = 'block';
+            document.getElementById('res-target-phone').innerText = intl;
+            document.getElementById('res-std-phone').innerText = e164;
+
+            // Generate Dorks/Queries
+            // We use variations to maximize hits
+            const baseVariations = `"${e164}" OR "${intl}" OR "${natl}" OR "${raw}"`;
             
             const platforms = [
-                { name: 'WhatsApp', icon: 'fa-whatsapp', user: 'Public Biz Account', url: `https://wa.me/${targetNumber.replace(/\D/g,'')}`, conf: 'high' },
-                { name: 'Facebook', icon: 'fa-facebook', user: 'Possible Match (Hidden)', url: '#', conf: 'med' },
-                { name: 'Telegram', icon: 'fa-telegram', user: '@Target_User123', url: 'https://t.me/target', conf: 'high' },
-                { name: 'Truecaller', icon: 'fa-phone', user: 'Verified Name: John D.', url: '#', conf: 'high' },
-                { name: 'Instagram', icon: 'fa-instagram', user: 'No public link found', url: '#', conf: 'low' }
+                { id: 'web', name: 'General Web', icon: 'fa-globe', color: '#fff', query: baseVariations, type: 'search' },
+                { id: 'fb', name: 'Facebook', icon: 'fa-facebook', color: '#1877F2', query: `${baseVariations} site:facebook.com | site:fb.com`, type: 'search' },
+                { id: 'ig', name: 'Instagram', icon: 'fa-instagram', color: '#E4405F', query: `${baseVariations} site:instagram.com`, type: 'search' },
+                { id: 'in', name: 'LinkedIn', icon: 'fa-linkedin', color: '#0A66C2', query: `${baseVariations} site:linkedin.com/in`, type: 'search' },
+                { id: 'x', name: 'X (Twitter)', icon: 'fa-x-twitter', color: '#fff', query: `${baseVariations} site:twitter.com | site:x.com`, type: 'search' },
+                { id: 'tg', name: 'Telegram', icon: 'fa-telegram', color: '#26A5E4', query: `${baseVariations} site:t.me`, type: 'search' },
+                { id: 'tk', name: 'TikTok', icon: 'fa-tiktok', color: '#fff', query: `${baseVariations} site:tiktok.com`, type: 'search' },
+                { id: 'docs', name: 'Public Docs/PDFs', icon: 'fa-file-pdf', color: '#ff3366', query: `${baseVariations} ext:pdf | ext:doc | ext:txt`, type: 'search' },
+                { id: 'wa', name: 'WhatsApp Link', icon: 'fa-whatsapp', color: '#25D366', query: `https://wa.me/${e164.replace('+', '')}`, type: 'direct' }
             ];
 
-            currentReportData = {
-                id: reportId,
-                type: 'Phone Intel',
-                target: targetNumber.substring(0, 5) + '******', // Masked
-                timestamp: new Date().toLocaleString(),
-                rawTarget: targetNumber,
-                profiles: platforms
-            };
+            const container = document.getElementById('phone-dorks-container');
+            container.innerHTML = '';
 
-            // Populate Results UI
-            document.getElementById('rep-phone-target').innerText = `Target: ${currentReportData.target}`;
-            document.getElementById('rep-phone-time').innerText = currentReportData.timestamp;
-
-            const grid = document.getElementById('phone-profiles-grid');
-            grid.innerHTML = '';
-            
             platforms.forEach(p => {
-                let badgeHtml = '';
-                if(p.conf === 'high') badgeHtml = '<span class="badge badge-high" style="font-size:0.6rem; float:right;">High Conf</span>';
-                else if(p.conf === 'med') badgeHtml = '<span class="badge badge-med" style="font-size:0.6rem; float:right;">Med Conf</span>';
-                else badgeHtml = '<span class="badge badge-low" style="font-size:0.6rem; float:right;">Low Conf</span>';
-
-                let linkHtml = p.url !== '#' ? `<a href="${p.url}" target="_blank" class="profile-link">View Profile <i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : '<span style="color:var(--text-muted); font-size:0.8rem;">Private/No Link</span>';
-
-                grid.innerHTML += `
-                    <div class="profile-card">
-                        <div class="profile-icon"><i class="fa-brands ${p.icon}"></i></div>
-                        <div class="profile-info" style="width:100%;">
-                            ${badgeHtml}
-                            <h4>${p.name}</h4>
-                            <p>${p.user}</p>
-                            ${linkHtml}
+                const actionUrl = p.type === 'search' ? getGoogleUrl(p.query) : p.query;
+                const actionText = p.type === 'search' ? 'Search Web' : 'Open Link';
+                
+                container.innerHTML += `
+                    <div class="dork-card">
+                        <div class="dork-header">
+                            <div class="platform-icon" style="color: ${p.color}"><i class="fa-brands ${p.icon} fa-solid"></i></div>
+                            <h3>${p.name}</h3>
+                            <span class="badge">Query Gen</span>
+                        </div>
+                        <div class="dork-query">${p.query}</div>
+                        <div class="dork-actions">
+                            <button class="btn-action btn-copy" onclick='copyToClipboard(${JSON.stringify(p.query)})'><i class="fa-regular fa-copy"></i> Copy</button>
+                            <a href="${actionUrl}" target="_blank" class="btn-action btn-search"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${actionText}</a>
                         </div>
                     </div>
                 `;
             });
 
-            // Save to History (Local)
-            saveToHistory(currentReportData);
+            // Save state for export
+            currentReport = { type: 'Phone', target: e164, queries: platforms };
+            saveToHistory('Phone Number', e164);
+        }
 
-            // Optional: Save to Firebase (Simulation of backend tracking)
-            if(db) {
-                db.collection("searches").add({
-                    id: currentReportData.id,
-                    type: currentReportData.type,
-                    timestamp: new Date(),
-                    maskedTarget: currentReportData.target
-                }).catch(e => console.log("Firebase write blocked/failed (expected if rules restrict)."));
+        function resetPhoneSearch() {
+            document.getElementById('phone-results').style.display = 'none';
+            document.getElementById('phone-input-card').style.display = 'block';
+            document.getElementById('phone-input').value = '';
+            currentReport = null;
+        }
+
+        // --- OTHER MODULES LOGIC ---
+        function generateSimpleDorks(moduleType) {
+            const inputId = `${moduleType}-input`;
+            const val = document.getElementById(inputId).value.trim();
+            if(!val) { showToast("Input required", "error"); return; }
+
+            const container = document.getElementById(`${moduleType}-dorks-container`);
+            document.getElementById(`${moduleType}-results`).style.display = 'block';
+            container.innerHTML = '';
+
+            let data = [];
+            
+            if(moduleType === 'email') {
+                data = [
+                    { name: 'Exact Match', query: `"${val}"` },
+                    { name: 'Pastebins', query: `"${val}" site:pastebin.com | site:controlc.com` },
+                    { name: 'Docs & Sheets', query: `"${val}" ext:pdf | ext:xls | ext:csv` }
+                ];
+            } else if (moduleType === 'user') {
+                data = [
+                    { name: 'Global Search', query: `"${val}"` },
+                    { name: 'Instagram', query: `site:instagram.com "${val}"` },
+                    { name: 'Reddit', query: `site:reddit.com/user/${val}` },
+                    { name: 'GitHub', query: `site:github.com "${val}"` }
+                ];
+            } else if (moduleType === 'domain') {
+                data = [
+                    { name: 'WHOIS Lookup (Direct)', query: `https://whois.com/whois/${val}`, type: 'direct' },
+                    { name: 'Subdomains (Google)', query: `site:${val} -www.${val}` },
+                    { name: 'MX/DNS (Direct)', query: `https://mxtoolbox.com/SuperTool.aspx?action=mx%3a${val}`, type: 'direct' }
+                ];
+            } else if (moduleType === 'ip') {
+                data = [
+                    { name: 'IP Info (Direct)', query: `https://ipinfo.io/${val}`, type: 'direct' },
+                    { name: 'Threat Intel', query: `"${val}" site:virustotal.com | site:abuseipdb.com` }
+                ];
             }
 
-            // UI Switch
-            document.getElementById('phone-scan-ui').style.display = 'none';
-            document.getElementById('phone-results-ui').style.display = 'block';
+            data.forEach(p => {
+                const actionUrl = p.type === 'direct' ? p.query : getGoogleUrl(p.query);
+                const actionText = p.type === 'direct' ? 'Open Tool' : 'Search Web';
+                
+                container.innerHTML += `
+                    <div class="dork-card">
+                        <div class="dork-header">
+                            <div class="platform-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <h3>${p.name}</h3>
+                        </div>
+                        <div class="dork-query">${p.query}</div>
+                        <div class="dork-actions">
+                            <button class="btn-action btn-copy" onclick='copyToClipboard(${JSON.stringify(p.query)})'><i class="fa-regular fa-copy"></i> Copy</button>
+                            <a href="${actionUrl}" target="_blank" class="btn-action btn-search"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${actionText}</a>
+                        </div>
+                    </div>
+                `;
+            });
             
-            logToTerminal(`Scan complete. Report generated: ${reportId}`);
-            updateStats();
+            saveToHistory(moduleType.toUpperCase(), val);
         }
 
-        function resetPhoneScan() {
-            document.getElementById('phone-results-ui').style.display = 'none';
-            document.getElementById('phone-input-card').style.display = 'block';
-            document.getElementById('phone-number').value = '';
-            document.getElementById('phone-consent').checked = false;
-            currentReportData = null;
-        }
-
-        // --- 5. HISTORY & STORAGE ---
+        // --- HISTORY & STORAGE ---
         function getHistory() {
-            const h = localStorage.getItem('bp_history');
-            return h ? JSON.parse(h) : [];
+            return JSON.parse(localStorage.getItem('bp_osint_history') || '[]');
         }
 
-        function saveToHistory(data) {
+        function saveToHistory(type, target) {
             const h = getHistory();
-            h.unshift(data); // Add to beginning
-            localStorage.setItem('bp_history', JSON.stringify(h.slice(0, 50))); // Keep last 50
+            h.unshift({ id: Date.now(), date: new Date().toLocaleString(), type, target });
+            localStorage.setItem('bp_osint_history', JSON.stringify(h.slice(0, 50))); // Keep last 50
         }
 
-        function loadHistory() {
+        function renderHistory() {
             const h = getHistory();
-            const tbody = document.getElementById('history-body');
+            const tbody = document.getElementById('history-tbody');
             tbody.innerHTML = '';
             
             if(h.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No records found in local databank.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No records found.</td></tr>';
                 return;
             }
 
             h.forEach((item, index) => {
                 tbody.innerHTML += `
                     <tr>
-                        <td style="font-family:var(--font-mono); color:var(--neon-cyan);">${item.id}</td>
-                        <td>${item.type}</td>
-                        <td style="font-family:var(--font-mono);">${item.target}</td>
-                        <td style="font-size:0.9rem;">${item.timestamp}</td>
+                        <td style="font-family:var(--font-mono); color:var(--text-muted);">${item.date}</td>
+                        <td><span class="status-indicator" style="background:transparent; border:1px solid var(--border-active); color:var(--text-main); display:inline-block; padding:4px 8px;">${item.type}</span></td>
+                        <td style="font-family:var(--font-mono); color:var(--accent-cyan);">${item.target}</td>
                         <td>
-                            <button class="action-btn" onclick="showToast('Loading cached report...')"><i class="fa-solid fa-eye"></i></button>
-                            <button class="action-btn delete" onclick="deleteHistoryItem(${index})"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-secondary btn-danger" style="padding: 5px 10px;" onclick="deleteHistoryItem(${index})"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -1231,42 +1035,50 @@
         function deleteHistoryItem(index) {
             const h = getHistory();
             h.splice(index, 1);
-            localStorage.setItem('bp_history', JSON.stringify(h));
-            loadHistory();
-            updateStats();
-            showToast("Record purged from local storage.");
+            localStorage.setItem('bp_osint_history', JSON.stringify(h));
+            renderHistory();
+            showToast("Record deleted");
         }
 
         function clearHistory() {
-            if(confirm("DANGER: Purge all local case files? This cannot be undone.")) {
-                localStorage.removeItem('bp_history');
-                loadHistory();
-                updateStats();
-                showToast("Local databank wiped completely.", "error");
+            if(confirm("Confirm purge of all local history?")) {
+                localStorage.removeItem('bp_osint_history');
+                renderHistory();
+                showToast("Databank purged", "success");
             }
         }
 
-        function updateStats() {
+        // --- EXPORT LOGIC ---
+        function exportData(type) {
+            if(!currentReport) return;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentReport, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `BP_Report_${currentReport.target}.json`);
+            document.body.appendChild(dl);
+            dl.click();
+            dl.remove();
+            showToast("JSON report downloaded");
+        }
+
+        function exportHistoryCSV() {
             const h = getHistory();
-            // Base total + history length to simulate large system
-            document.getElementById('stat-total').innerText = (1042 + h.length).toLocaleString();
+            if(h.length === 0) { showToast("No history to export", "error"); return; }
+            
+            let csv = "Date,Type,Target\n";
+            h.forEach(row => {
+                csv += `"${row.date}","${row.type}","${row.target}"\n`;
+            });
+            
+            const dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `BP_History_Export.csv`);
+            document.body.appendChild(dl);
+            dl.click();
+            dl.remove();
+            showToast("CSV History exported");
         }
-
-        // --- 6. EXPORT UTILS ---
-        function exportJSON(type) {
-            if(!currentReportData) return;
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentReportData, null, 2));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `${currentReportData.id}_report.json`);
-            dlAnchorElem.click();
-            showToast("JSON report downloaded securely.");
-        }
-
-        // Init
-        window.onload = () => {
-            updateStats();
-        };
 
     </script>
 </body>
